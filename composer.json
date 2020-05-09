@@ -1,0 +1,10 @@
+{
+    "autoload": {
+        "psr-4": {
+            "PHPTF\\": "classes/"
+        }
+    },
+    "require": {
+        "guzzlehttp/guzzle": "~6.0"
+    }
+}
