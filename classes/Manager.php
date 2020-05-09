@@ -85,8 +85,7 @@ class Manager
   private function repVirtualFault(int $zipCode)
   {
     try {
-      $ovo = $this->repVirtualHTTP->get("/web_cep.asdasdsdphp?cep=$zipCode&formato=json");
-      echo $ovo->getBody();
+      $this->repVirtualHTTP->get("/web_cep.asdasdsdphp?cep=$zipCode&formato=json");
     } catch (\Throwable $th) {
       [$errorMessage] = explode('response', $th->getMessage());
       
