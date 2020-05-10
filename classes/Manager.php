@@ -27,32 +27,32 @@ class Manager
    *
    * @return bool
    */
-  public function run(int $zipCode, int $option): bool
+  public function run(string $zipCode, int $option): void
   {
     switch ($option) {
       case 1:
         $this->parallelExecution($zipCode);
-        return false;
       break;
       
       case 2:
         $this->viaCepFault($zipCode);
-        return false;
       break;
       
       case 3:
         $this->repVirtualFault($zipCode);
-        return false;
       break;
       
+      case 4:
+        $this->sendCepWithoutValidation($zipCode);
+      break;
+
       default:
         echo 'Esperamos que encontre seu destino :P';
-        return true;
       break;
     }
   }
 
-  private function parallelExecution(int $zipCode)
+  private function parallelExecution(string $zipCode)
   {
     $promises = [
       'viaCep' => $this->viaCepHTTP->getAsync("$zipCode/json"),
@@ -70,7 +70,7 @@ class Manager
     $this->showResult("Resultado República Virtual [$zipCode]", $repVirtualResult);
   }
 
-  private function viaCepFault(int $zipCode)
+  private function viaCepFault(string $zipCode)
   {
     try {
       $this->viaCepHTTP->get("$zipCode/dasdasdasdjson");
@@ -86,7 +86,7 @@ class Manager
     $this->showResult("Ainda bem que temos um plano B! Resultado República Virtual [$zipCode]", $repVirtualResult);
   }
 
-  private function repVirtualFault(int $zipCode)
+  private function repVirtualFault(string $zipCode)
   {
     try {
       $this->repVirtualHTTP->get("/web_cep.asdasdsdphp?cep=$zipCode&formato=json");
@@ -102,13 +102,44 @@ class Manager
     $this->showResult("Ainda bem que temos um plano B! Resultado ViaCEP [$zipCode]", $viaCepResult);
   }
 
+  private function sendCepWithoutValidation(string $zipCode) 
+  {
+    try {
+      $viaCepResponse = $this->viaCepHTTP->get("$zipCode/json");
+      $viaCepResult = json_decode($viaCepResponse->getBody(), true);
+      $this->showResult("Resultado ViaCep [$zipCode]", $viaCepResult);
+    } catch (\Throwable $th) {
+      [$errorMessage] = explode('response', $th->getMessage());
+
+      echo "\n\n \033[91m \t#### Oops! Resultado ViaCEP [$zipCode] #### \n";
+      echo "\t => $errorMessage \n\n";
+    }
+
+    try {
+      $repVirtualResponse = $this->repVirtualHTTP->get("/web_cep.php?cep=$zipCode&formato=json");
+      $repVirtualResult = json_decode($repVirtualResponse->getBody(), true);
+      if ($repVirtualResult['resultado']) {
+        $this->showResult("Resultado República Virtual [$zipCode]", $repVirtualResult);
+      } else {
+        echo "\n\n \033[91m \t#### Oops! Resultado República Virtual [$zipCode] #### \n";
+        $errorMessage = $repVirtualResult['debug'];
+        echo "\t => $errorMessage \n\n";
+      }
+    } catch (\Throwable $th) {
+      [$errorMessage] = explode('response', $th->getMessage());
+      
+      echo "\n\n \033[91m \t#### Oops! Resultado República Virtual [$zipCode] #### \n";
+      echo "\t => $errorMessage \n\n";
+    }    
+  }
+
   private function showResult(string $title, array $body)
   {
     echo "\n\n \033[32m \t#### $title #### \n";
     foreach ($body as $key => $value) {
       echo "\t\t ($key)  => $value \n";
     }
-    echo "\e[0m \n";
+    echo "\n";
   }
 
 }
