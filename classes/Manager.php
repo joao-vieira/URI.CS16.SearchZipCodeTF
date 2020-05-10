@@ -3,8 +3,6 @@
 namespace PHPTF;
 
 use GuzzleHttp\{Client, Promise};
-use PHPTF\ViaCep;
-use PHPTF\RepublicaVirtual;
 
 class Manager
 {
@@ -25,7 +23,7 @@ class Manager
    * @param int $zipCode
    * @param integer $option
    *
-   * @return bool
+   * @return void
    */
   public function run(string $zipCode, int $option): void
   {
@@ -52,7 +50,14 @@ class Manager
     }
   }
 
-  private function parallelExecution(string $zipCode)
+  /**
+   * Performs two requests simultaneously and displays the result when both are finished
+   *
+   * @param string $zipCode
+   *
+   * @return void
+   */
+  private function parallelExecution(string $zipCode): void
   {
     $promises = [
       'viaCep' => $this->viaCepHTTP->getAsync("$zipCode/json"),
@@ -70,7 +75,14 @@ class Manager
     $this->showResult("Resultado República Virtual [$zipCode]", $repVirtualResult);
   }
 
-  private function viaCepFault(string $zipCode)
+  /**
+   * Causes a forced error in the viacep request
+   *
+   * @param string $zipCode
+   * 
+   * @return void
+   */
+  private function viaCepFault(string $zipCode): void
   {
     try {
       $this->viaCepHTTP->get("$zipCode/dasdasdasdjson");
@@ -86,7 +98,14 @@ class Manager
     $this->showResult("Ainda bem que temos um plano B! Resultado República Virtual [$zipCode]", $repVirtualResult);
   }
 
-  private function repVirtualFault(string $zipCode)
+  /**
+   * Causes a forced error in the repúblicavirtual request
+   *
+   * @param string $zipCode
+   *
+   * @return void
+   */
+  private function repVirtualFault(string $zipCode): void
   {
     try {
       $this->repVirtualHTTP->get("/web_cep.asdasdsdphp?cep=$zipCode&formato=json");
@@ -102,12 +121,23 @@ class Manager
     $this->showResult("Ainda bem que temos um plano B! Resultado ViaCEP [$zipCode]", $viaCepResult);
   }
 
-  private function sendCepWithoutValidation(string $zipCode) 
+  /**
+   * Performs a request without validating the zip code
+   *
+   * @param string $zipCode
+   *
+   * @return void
+   */
+  private function sendCepWithoutValidation(string $zipCode): void
   {
     try {
       $viaCepResponse = $this->viaCepHTTP->get("$zipCode/json");
       $viaCepResult = json_decode($viaCepResponse->getBody(), true);
-      $this->showResult("Resultado ViaCep [$zipCode]", $viaCepResult);
+      if (array_key_exists('erro', $viaCepResult)) {
+        throw new \Exception('Não foi possível encontrar o CEP informado!');
+      } else {
+        $this->showResult("Resultado ViaCep [$zipCode]", $viaCepResult);
+      }
     } catch (\Throwable $th) {
       [$errorMessage] = explode('response', $th->getMessage());
 
@@ -133,7 +163,15 @@ class Manager
     }    
   }
 
-  private function showResult(string $title, array $body)
+  /**
+   * Displays the result of the request
+   *
+   * @param string $title
+   * @param array $body
+   *
+   * @return void
+   */
+  private function showResult(string $title, array $body): void
   {
     echo "\n\n \033[32m \t#### $title #### \n";
     foreach ($body as $key => $value) {
