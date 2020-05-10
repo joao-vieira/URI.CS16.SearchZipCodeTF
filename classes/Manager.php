@@ -3,8 +3,6 @@
 namespace PHPTF;
 
 use GuzzleHttp\{Client, Promise};
-use PHPTF\ViaCep;
-use PHPTF\RepublicaVirtual;
 
 class Manager
 {
@@ -25,34 +23,41 @@ class Manager
    * @param int $zipCode
    * @param integer $option
    *
-   * @return bool
+   * @return void
    */
-  public function run(int $zipCode, int $option): bool
+  public function run(string $zipCode, int $option): void
   {
     switch ($option) {
       case 1:
         $this->parallelExecution($zipCode);
-        return false;
       break;
       
       case 2:
         $this->viaCepFault($zipCode);
-        return false;
       break;
       
       case 3:
         $this->repVirtualFault($zipCode);
-        return false;
       break;
       
+      case 4:
+        $this->sendCepWithoutValidation($zipCode);
+      break;
+
       default:
         echo 'Esperamos que encontre seu destino :P';
-        return true;
       break;
     }
   }
 
-  private function parallelExecution(int $zipCode)
+  /**
+   * Performs two requests simultaneously and displays the result when both are finished
+   *
+   * @param string $zipCode
+   *
+   * @return void
+   */
+  private function parallelExecution(string $zipCode): void
   {
     $promises = [
       'viaCep' => $this->viaCepHTTP->getAsync("$zipCode/json"),
@@ -70,7 +75,14 @@ class Manager
     $this->showResult("Resultado República Virtual [$zipCode]", $repVirtualResult);
   }
 
-  private function viaCepFault(int $zipCode)
+  /**
+   * Causes a forced error in the viacep request
+   *
+   * @param string $zipCode
+   * 
+   * @return void
+   */
+  private function viaCepFault(string $zipCode): void
   {
     try {
       $this->viaCepHTTP->get("$zipCode/dasdasdasdjson");
@@ -86,7 +98,14 @@ class Manager
     $this->showResult("Ainda bem que temos um plano B! Resultado República Virtual [$zipCode]", $repVirtualResult);
   }
 
-  private function repVirtualFault(int $zipCode)
+  /**
+   * Causes a forced error in the repúblicavirtual request
+   *
+   * @param string $zipCode
+   *
+   * @return void
+   */
+  private function repVirtualFault(string $zipCode): void
   {
     try {
       $this->repVirtualHTTP->get("/web_cep.asdasdsdphp?cep=$zipCode&formato=json");
@@ -102,13 +121,63 @@ class Manager
     $this->showResult("Ainda bem que temos um plano B! Resultado ViaCEP [$zipCode]", $viaCepResult);
   }
 
-  private function showResult(string $title, array $body)
+  /**
+   * Performs a request without validating the zip code
+   *
+   * @param string $zipCode
+   *
+   * @return void
+   */
+  private function sendCepWithoutValidation(string $zipCode): void
+  {
+    try {
+      $viaCepResponse = $this->viaCepHTTP->get("$zipCode/json");
+      $viaCepResult = json_decode($viaCepResponse->getBody(), true);
+      if (array_key_exists('erro', $viaCepResult)) {
+        throw new \Exception('Não foi possível encontrar o CEP informado!');
+      } else {
+        $this->showResult("Resultado ViaCep [$zipCode]", $viaCepResult);
+      }
+    } catch (\Throwable $th) {
+      [$errorMessage] = explode('response', $th->getMessage());
+
+      echo "\n\n \033[91m \t#### Oops! Resultado ViaCEP [$zipCode] #### \n";
+      echo "\t => $errorMessage \n\n";
+    }
+
+    try {
+      $repVirtualResponse = $this->repVirtualHTTP->get("/web_cep.php?cep=$zipCode&formato=json");
+      $repVirtualResult = json_decode($repVirtualResponse->getBody(), true);
+      if ($repVirtualResult['resultado']) {
+        $this->showResult("Resultado República Virtual [$zipCode]", $repVirtualResult);
+      } else {
+        echo "\n\n \033[91m \t#### Oops! Resultado República Virtual [$zipCode] #### \n";
+        $errorMessage = $repVirtualResult['debug'];
+        echo "\t => $errorMessage \n\n";
+      }
+    } catch (\Throwable $th) {
+      [$errorMessage] = explode('response', $th->getMessage());
+      
+      echo "\n\n \033[91m \t#### Oops! Resultado República Virtual [$zipCode] #### \n";
+      echo "\t => $errorMessage \n\n";
+    }    
+  }
+
+  /**
+   * Displays the result of the request
+   *
+   * @param string $title
+   * @param array $body
+   *
+   * @return void
+   */
+  private function showResult(string $title, array $body): void
   {
     echo "\n\n \e[32m \t#### $title #### \n";
     foreach ($body as $key => $value) {
       echo "\t\t ($key)  => $value \n";
     }
-    echo "\e[0m \n";
+    echo "\n";
   }
 
 }

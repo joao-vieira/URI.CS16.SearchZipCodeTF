@@ -14,10 +14,11 @@ class Validator
    *
    * @return int
    */
-  public function readFromUser(int $check = 1, string $label, string $errorMessage): int
+  public function readFromUser(int $check = 1, string $label, string $errorMessage): string
   {
     $isValid = false;
     while (!$isValid) {
+      echo "\e[0m";
       $input = readline($label);
 
       switch ($check) {
@@ -29,6 +30,10 @@ class Validator
           $isValid = $this->validateOption($input);
         break;
         
+        case 3:          
+          $isValid = true; //ignore validation
+        break;
+
         default:
           echo 'Revisar switch =/ \n';
           $isValid = false;
@@ -71,7 +76,7 @@ class Validator
    */
   public function validateOption(string $option): bool
   {
-    if ($option >= 0 && $option < 4) {
+    if ($option >= 0 && $option <= 4) {
       return true;
     }
     
