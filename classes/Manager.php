@@ -25,25 +25,29 @@ class Manager
    * @param int $zipCode
    * @param integer $option
    *
-   * @return void
+   * @return bool
    */
-  public function run(int $zipCode, int $option): void
+  public function run(int $zipCode, int $option): bool
   {
     switch ($option) {
       case 1:
         $this->parallelExecution($zipCode);
+        return false;
       break;
       
       case 2:
         $this->viaCepFault($zipCode);
+        return false;
       break;
       
       case 3:
         $this->repVirtualFault($zipCode);
+        return false;
       break;
       
       default:
         echo 'Esperamos que encontre seu destino :P';
+        return true;
       break;
     }
   }
@@ -104,7 +108,7 @@ class Manager
     foreach ($body as $key => $value) {
       echo "\t\t ($key)  => $value \n";
     }
-    echo "\n";
+    echo "\e[0m \n";
   }
 
 }
