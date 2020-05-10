@@ -77,7 +77,7 @@ class Manager
     } catch (\Throwable $th) {
       [$errorMessage] = explode('response', $th->getMessage());
       
-      echo "\n\n \033[91m \t#### Oops! Resultado ViaCEP [$zipCode] #### \n";
+      echo "\n\n \e[91m \t#### Oops! Resultado ViaCEP [$zipCode] #### \n";
       echo "\t => $errorMessage \n\n";
     }
 
@@ -93,7 +93,7 @@ class Manager
     } catch (\Throwable $th) {
       [$errorMessage] = explode('response', $th->getMessage());
       
-      echo "\n\n \033[91m \t#### Oops! Resultado República Virtual [$zipCode] #### \n";
+      echo "\n\n \e[91m \t#### Oops! Resultado República Virtual [$zipCode] #### \n";
       echo "\t => $errorMessage \n\n";
     }
 
@@ -104,7 +104,7 @@ class Manager
 
   private function showResult(string $title, array $body)
   {
-    echo "\n\n \033[32m \t#### $title #### \n";
+    echo "\n\n \e[32m \t#### $title #### \n";
     foreach ($body as $key => $value) {
       echo "\t\t ($key)  => $value \n";
     }

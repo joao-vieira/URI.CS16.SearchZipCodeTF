@@ -1,12 +1,24 @@
 # URI.CS16.SearchZipCodeTF
 
-Trabalho desenvolvido para a matéria de Tolerância à Falhas (2020/1). Ele consiste em, um script simples criado para simular tolerância à falhas quando o usuário informa, através do console, um CEP que deseja buscar.
+Trabalho desenvolvido para a matéria de Tolerância à Falhas (2020/1). Consiste em um *script* simples criado para simular um sistema tolerante à falhas no consumo de duas APIs REST que retornam as informações de um CEP, informado pelo usuário, através do console.
 
-## Como executar
+```plain
+Desenvolver uma aplicação (em qualquer linguagem), que utilize da técnica de redundância de Software
+A aplicação deve retornar informações de um cep (passado por parâmetro), utilizando os serviços:
+ViaCEP e República Virtual
+Caso ocorra erro com o primeiro serviço, utilize o segundo
+Não precisa de interface gráfica
+```
+
+- **Acadêmicos**
+  - [João Vitor Veronese Vieira](https://github.com/joao-vieira)
+  - [Vinicius Emanoel Andrade](https://github.com/viniciusandd)
+
+## :rocket: Como executar
 
 Existem duas possibilidades de executar o script, são elas:
 
-### Na minha máquina
+### :computer: Na minha máquina
 
 A primeira etapa é mapear as classes do projeto.
 
@@ -20,7 +32,7 @@ Por fim, basta executar o script.
 
 `php index.php`
 
-### Em um container
+### :whale: Em um container
 
 Primeiramente, vamos buildar uma nova imagem.
 
